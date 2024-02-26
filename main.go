@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"github.com/gin-contrib/cors"
 )
 
 type Register struct {
@@ -13,8 +16,26 @@ type Register struct {
 	Avatar   string `json:"avatar" binding:"required"`
 }
 
+type User struct {
+	gorm.Model
+	Username string
+	Password string
+	Fullname string
+	Avatar   string
+}
+
 func main() {
+	dsn := "root@tcp(127.0.0.1:3306)/gojwt?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	// Migrate the schema
+	db.AutoMigrate(&User{})
+
 	r := gin.Default()
+	r.Use(cors.Default())
 	r.POST("/register", func(c *gin.Context) {
 
 		var json Register
