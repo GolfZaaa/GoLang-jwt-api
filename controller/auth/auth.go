@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"melivecode/jwt-api/orm"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -78,9 +80,10 @@ func Login(c *gin.Context) {
 	}
 	err := bcrypt.CompareHashAndPassword([]byte(userExits.Password), []byte(json.Password))
 	if err == nil {
-		hmacSampleSecret = []byte("my_secret_key")
+		hmacSampleSecret = []byte(os.Getenv("JWT_SECRET_KEY"))
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"userId": userExits.ID,
+			"exp":    time.Now().Add(time.Minute * 1).Unix(),
 		})
 
 		tokenString, err := token.SignedString(hmacSampleSecret)
